@@ -1,2 +1,2 @@
-# SpringStudy
-스프링 스터디
+# SpringBootStudy
+스프링부트 스터디
