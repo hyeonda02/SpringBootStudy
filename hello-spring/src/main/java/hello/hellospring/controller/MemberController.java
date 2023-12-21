@@ -1,8 +1,14 @@
 package hello.hellospring.controller;
 
+import hello.hellospring.domain.Member;
 import hello.hellospring.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import java.util.List;
 
 //Controller 애노테이션이 있으면 스프링이 뜰때 알아서 만들어서 관리해준다.
 @Controller
@@ -14,8 +20,6 @@ public class MemberController {
     //그러나 memberService는 순수한 자바 클래스라서 스프링이 인식하지 못한다.
     //그렇기 때문에 @Service를 넣어주면 된다. (memberSErvice 클래스에)
     //그리고 Repository는 @Repository 해주어야 한다.
-
-
     /*
     스프링 빈을 등록하는 2가지 방법
     1. 컴포넌트 스캔과 자동 의존관계 설정 @Service, @Repository, @Autowired
@@ -34,5 +38,25 @@ public class MemberController {
     @Autowired
     public MemberController(MemberService memberService) {
         this.memberService = memberService;
+    }
+    @GetMapping("/members/new") //GET 방식
+    public String createForm(){
+        return "members/createMemberForm"; //Form 이동
+    }
+    //데이터를 폼 같은데 넣어서 전달할때 PostMapping 사용
+    @PostMapping("/members/new")
+    public String create(MemberForm form){
+        Member member = new Member();
+        member.setName(form.getName());
+        memberService.join(member);
+
+        //회원가입 기능 후, 홈으로 리다이렉트
+        return"redirect:/";
+    }
+    @GetMapping("/members")
+    public String list(Model model){
+        List<Member> members = memberService.findMembers();
+        model.addAttribute("members",members);
+        return "members/memberList";
     }
 }
