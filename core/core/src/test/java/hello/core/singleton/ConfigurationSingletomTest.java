@@ -15,18 +15,19 @@ public class ConfigurationSingletomTest {
     @Test
     void configurationTest(){
         ApplicationContext ac = new AnnotationConfigApplicationContext(AppConfig.class);
-        MemberServiceImpl memberSErvice = ac.getBean("mmm", MemberServiceImpl.class);
-        OrderServiceImpl orderService = ac.getBean("orderService", OrderServiceImpl.class);
 
+        MemberServiceImpl memberService = ac.getBean("mmm", MemberServiceImpl.class);
+        OrderServiceImpl orderService = ac.getBean("orderService", OrderServiceImpl.class);
         MemberRepository memberRepository = ac.getBean("memberRepository", MemberRepository.class);
-        MemberRepository memberRepository1 = memberSErvice.getMemberRepository();
+
+        MemberRepository memberRepository1 = memberService.getMemberRepository();
         MemberRepository memberRepository2 = orderService.getMemberRepository();
 
         System.out.println("memberRepository1 = " + memberRepository1);
         System.out.println("memberRepository1 = " + memberRepository2);
         System.out.println("memberRepository1 = " + memberRepository);
 
-        Assertions.assertThat(memberSErvice.getMemberRepository()).isSameAs(memberRepository);
+        Assertions.assertThat(memberService.getMemberRepository()).isSameAs(memberRepository);
         Assertions.assertThat(orderService.getMemberRepository()).isSameAs(memberRepository);
     }
     @Test
