@@ -10,6 +10,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
+import org.springframework.validation.ValidationUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -161,13 +162,14 @@ public class ValidationItemControllerV2 {
 
 
 
-        //검증 로직
-        if (!StringUtils.hasText(item.getItemName())) {
-//            bindingResult.addError(new FieldError("item", "itemName", "상품 이름은 필수 입니다."));
-//            bindingResult.addError(new FieldError("item", "itemName", item.getItemName(),false, null, null, "상품 이름은 필수 입니다."));
-//            bindingResult.addError(new FieldError("item", "itemName", item.getItemName(), false, new String[]{"required.item.itemName"}, null, null));
-            bindingResult.rejectValue("itemName", "required");
-        }
+        //검증 로직 : 한줄로도 가능, 제공하는 기능은 Empty, 공백 같은 단순한 기능만 제공
+        ValidationUtils.rejectIfEmptyOrWhitespace(bindingResult, "itemName", "required");
+//        if (!StringUtils.hasText(item.getItemName())) {
+////            bindingResult.addError(new FieldError("item", "itemName", "상품 이름은 필수 입니다."));
+////            bindingResult.addError(new FieldError("item", "itemName", item.getItemName(),false, null, null, "상품 이름은 필수 입니다."));
+////            bindingResult.addError(new FieldError("item", "itemName", item.getItemName(), false, new String[]{"required.item.itemName"}, null, null));
+//            bindingResult.rejectValue("itemName", "required");
+//        }
         if(item.getPrice()==null||item.getPrice()<1000||item.getPrice()>1000000){
 //            bindingResult.addError(new FieldError("item", "price", "가격은 1,000 ~ 1,000,000 까지 허용합니다."));
 //            bindingResult.addError(new FieldError("item", "price", item.getPrice(), false, null, null, "가격은 1,000 ~ 1,000,000 까지 허용합니다."));
