@@ -4,6 +4,8 @@ import hello.itemservice.domain.item.Item;
 import hello.itemservice.domain.item.ItemRepository;
 import hello.itemservice.domain.item.SaveCheck;
 import hello.itemservice.domain.item.UpdateCheck;
+import hello.itemservice.web.validation.form.ItemSaveForm;
+import hello.itemservice.web.validation.form.ItemUpdateForm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -21,79 +23,23 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ValidationItemControllerV4 {
     private final ItemRepository itemRepository;
-    private final ItemValidator itemValidator;
-
     @GetMapping
     public String items(Model model) {
         List<Item> items = itemRepository.findAll();
         model.addAttribute("items", items);
         return "validation/v4/items";
     }
-
     @GetMapping("/{itemId}")
     public String item(@PathVariable long itemId, Model model) {
         Item item = itemRepository.findById(itemId);
         model.addAttribute("item", item);
         return "validation/v4/item";
     }
-
     @GetMapping("/add")
     public String addForm(Model model) {
         model.addAttribute("item", new Item());
         return "validation/v4/addForm";
     }
-
-
-//    @PostMapping("/add")
-    public String addItem(@Validated @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
-
-        //특정 필드 예외가 아닌 전체 예외 -> 글로벌 오류
-        if (item.getPrice() != null && item.getQuantity() != null) {
-            int resultPrice = item.getPrice() * item.getQuantity();
-            if(resultPrice <10000){
-//                bindingResult.addError(new ObjectError("item", "가격 * 수량의 합은 10,000원 이상이여야 합니다. 현재 값 = " + resultPrice));
-//                bindingResult.addError(new ObjectError("item", null, null, "가격 * 수량의 합은 10,000원 이상이여야 합니다. 현재 값 = " + resultPrice));
-//                bindingResult.addError(new ObjectError("item", new String[]{"totalPriceMin"}, new Object[]{10000, resultPrice}, null));
-                bindingResult.reject("totalPriceMin", new Object[]{10000, resultPrice}, null);
-            }
-        }
-
-        if(bindingResult.hasErrors()){
-            log.info("errors={}", bindingResult);
-            return "validation/v4/addForm";
-        }
-        //성공 로직
-        Item savedItem = itemRepository.save(item);
-        redirectAttributes.addAttribute("itemId", savedItem.getId());
-        redirectAttributes.addAttribute("status", true);
-        return "redirect:/validation/v4/items/{itemId}";
-    }
-
-    @PostMapping("/add")
-    public String addItem2(@Validated(value = SaveCheck.class) @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
-
-        //특정 필드 예외가 아닌 전체 예외 -> 글로벌 오류
-        if (item.getPrice() != null && item.getQuantity() != null) {
-            int resultPrice = item.getPrice() * item.getQuantity();
-            if(resultPrice <10000){
-//                bindingResult.addError(new ObjectError("item", "가격 * 수량의 합은 10,000원 이상이여야 합니다. 현재 값 = " + resultPrice));
-//                bindingResult.addError(new ObjectError("item", null, null, "가격 * 수량의 합은 10,000원 이상이여야 합니다. 현재 값 = " + resultPrice));
-//                bindingResult.addError(new ObjectError("item", new String[]{"totalPriceMin"}, new Object[]{10000, resultPrice}, null));
-                bindingResult.reject("totalPriceMin", new Object[]{10000, resultPrice}, null);
-            }
-        }
-
-        if(bindingResult.hasErrors()){
-            log.info("errors={}", bindingResult);
-            return "validation/v4/addForm";
-        }
-        //성공 로직
-        Item savedItem = itemRepository.save(item);
-        redirectAttributes.addAttribute("itemId", savedItem.getId());
-        redirectAttributes.addAttribute("status", true);
-        return "redirect:/validation/v4/items/{itemId}";
-    }
-
     @GetMapping("/{itemId}/edit")
     public String editForm(@PathVariable Long itemId, Model model) {
         Item item = itemRepository.findById(itemId);
@@ -101,28 +47,40 @@ public class ValidationItemControllerV4 {
         return "validation/v4/editForm";
     }
 
-//    @PostMapping("/{itemId}/edit")
-    public String edit(@PathVariable Long itemId, @Validated @ModelAttribute Item item, BindingResult bindingResult) {
-        //특정 필드 예외가 아닌 전체 예외 (Object 예외)
-        if(item.getPrice() !=null && item.getQuantity()!=null){
-            int resultPrice = item.getPrice() * item.getQuantity();
-            if(resultPrice<10000){
+    /**
+     *      등록, 수정용 폼 객체를 사용하도록 컨트롤러 수정
+     */
+    @PostMapping("/add")
+    public String addItem(@Validated @ModelAttribute("item") ItemSaveForm form, BindingResult bindingResult, RedirectAttributes redirectAttributes){
+        //특정 필드 예외가 아닌 전체 예외
+        if (form.getPrice() != null && form.getQuantity() != null) {
+            int resultPrice = form.getPrice() * form.getQuantity();
+            if (resultPrice < 10000) {
                 bindingResult.reject("totalPriceMin", new Object[]{10000, resultPrice}, null);
             }
         }
         if (bindingResult.hasErrors()) {
             log.info("errors={}", bindingResult);
-            return "validation/v4/editForm";
+            return "validation/v4/addForm";
         }
-        itemRepository.update(itemId, item);
+        //성공 로직
+        //폼 객체처럼 중간에 다른 객체가 추가되면 다음과 같이 변환 과정이 필요하다.
+        Item item = new Item();
+        item.setItemName(form.getItemName());
+        item.setQuantity(form.getQuantity());
+        item.setPrice(form.getPrice());
+
+        Item itemSaved = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", itemSaved.getId());
+        redirectAttributes.addAttribute("status", true);
         return "redirect:/validation/v4/items/{itemId}";
     }
     @PostMapping("/{itemId}/edit")
-    public String editV2(@PathVariable Long itemId, @Validated(value = UpdateCheck.class) @ModelAttribute Item item, BindingResult bindingResult) {
-        //특정 필드 예외가 아닌 전체 예외 (Object 예외)
-        if(item.getPrice() !=null && item.getQuantity()!=null){
-            int resultPrice = item.getPrice() * item.getQuantity();
-            if(resultPrice<10000){
+    public String edit(@PathVariable Long itemId, @Validated @ModelAttribute("item")ItemUpdateForm form, BindingResult bindingResult){
+        //특정 필드 예외가 아닌 전체 예외
+        if (form.getPrice() != null && form.getQuantity() != null) {
+            int resultPrice = form.getPrice() * form.getQuantity();
+            if (resultPrice < 10000) {
                 bindingResult.reject("totalPriceMin", new Object[]{10000, resultPrice}, null);
             }
         }
@@ -130,9 +88,15 @@ public class ValidationItemControllerV4 {
             log.info("errors={}", bindingResult);
             return "validation/v4/editForm";
         }
-        itemRepository.update(itemId, item);
+        Item itemParam = new Item();
+        itemParam.setItemName(form.getItemName());
+        itemParam.setQuantity(form.getQuantity());
+        itemParam.setPrice(form.getPrice());
+
+        itemRepository.update(itemId, itemParam);
         return "redirect:/validation/v4/items/{itemId}";
     }
+
 
 }
 
