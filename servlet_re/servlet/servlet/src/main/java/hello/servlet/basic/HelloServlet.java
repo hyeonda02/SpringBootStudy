@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 //서블릿 등록하기 ( 실제로 동작하는 서블릿 코드를 등록
-@WebServlet(name = "helloServlet", urlPatterns = "/hello") //서블릿 애노테이션 (name = 서블릿 이름, urlPatterns = URL 매핑)
+@WebServlet(name = "helloServlet", urlPatterns ="/hello") //서블릿 애노테이션 (name = 서블릿 이름, urlPatterns = URL 매핑)
 public class HelloServlet extends HttpServlet {
     //Http 요청을 통해 매핑된 URL이 호출되면 서블릿 컨테이너는 다음 service 메서드를 실행한다.
     @Override
