@@ -8,6 +8,8 @@ group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
+ext["hibernate.version"] = "5.6.5.Final"
+
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
@@ -31,7 +33,7 @@ dependencies {
 
 	//MyBatis 추가
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.3.1'
-	//JPA, 스프링 데이터 JPA 추가
+	//JPA, 스프링 데이터 JPA 추가 (JDBC 같은 것들도 포함하기 때문에, JDBC Template 부분은 주석처리해도 된다. )
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
 	//H2 데이터베이스 추가

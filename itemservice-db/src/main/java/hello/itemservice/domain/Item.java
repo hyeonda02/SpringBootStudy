@@ -11,8 +11,8 @@ public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name="item_name",length=10)
-    private String itemName;
+    @Column(name="item_name",length=10) //DB item_name 컬럼이랑 매핑됨
+    private String itemName; //컬럼 명이 객체 명이랑 같다면 생략 가능
     private Integer price;
     private Integer quantity;
 
